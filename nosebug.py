@@ -72,10 +72,12 @@ def generate(file_list,
             
             if not single_file:
                 backend.ON_FILE_END(outfile, outfile_name)
+                log.info("wrote %s" % outfile_name)
                 outfile.close()
         
     if single_file:
         backend.ON_FILE_END(outfile, outfile_name)
+        log.info("wrote %s" % outfile_name)
         outfile.close()
 
 #def unittest():
