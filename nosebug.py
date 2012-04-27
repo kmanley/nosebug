@@ -30,7 +30,9 @@ def generate(file_list,
              delim_end = None):
     """
     backend: string name of backend, e.g. "python"
-    file_list: list of template files to process
+    file_list: List of template files to process. Each item can optionally be a tuple pair
+                (filename, funcname) indicating the name of the target function to write. If not specified
+                the target function name will be derived from the filename.
     single_file: if None, generate a file for each template.
                  Otherwise, generate all functions into named file
     output_dir: directory for output files 
@@ -54,8 +56,13 @@ def generate(file_list,
         outfile = open(outfile_name, "wb")
         backend.ON_FILE_START(outfile, outfile_name)
         
-    for file_name in file_list:
-        with open(file_name) as infile:
+    for item in file_list:
+        if type(item) in (str, unicode):
+            file_name = item
+            func_name = os.path.splitext(os.path.split(file_name)[-1])[0]
+        else:
+            file_name, func_name = item
+        with open(file_name, "rb") as infile:
             if not single_file:
                 if not output_dir:
                     output_dir = os.path.dirname(os.path.abspath(file_name))
@@ -63,12 +70,12 @@ def generate(file_list,
                 outfile = open(outfile_name, "wb")
                 backend.ON_FILE_START(outfile, outfile_name) 
 
-            backend.ON_TEMPLATE_START(outfile, file_name)
+            backend.ON_TEMPLATE_START(outfile, func_name)
             
             for tok, level in parser.iterparse(infile.read()):
                 getattr(backend, "ON_%s" % tok.type)(outfile, tok.value, level)
 
-            backend.ON_TEMPLATE_END(outfile, file_name)
+            backend.ON_TEMPLATE_END(outfile, func_name)
             
             if not single_file:
                 backend.ON_FILE_END(outfile, outfile_name)
@@ -108,3 +115,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    

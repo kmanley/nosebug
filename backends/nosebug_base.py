@@ -5,7 +5,7 @@ class BackendBase(object):
     def ON_FILE_START(self, fp, file_name):
         pass
         
-    def ON_TEMPLATE_START(self, fp, file_name):
+    def ON_TEMPLATE_START(self, fp, func_name):
         pass
         
     def ON_STRING(self, fp, path, level):
@@ -32,7 +32,7 @@ class BackendBase(object):
     def ON_TAG_VAR_ESCAPED(self, fp, path, level):
         raise NotImplementedError()
     
-    def ON_TEMPLATE_END(self, fp, file_name):
+    def ON_TEMPLATE_END(self, fp, func_name):
         pass
 
     def ON_FILE_END(self, fp, file_name):

@@ -33,8 +33,7 @@ function start_section(stack, path) {
 } 
 
 function html_escape(s) {
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    return s;
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 """
@@ -67,8 +66,7 @@ class Backend(BackendBase):
     def ON_FILE_START(self, fp, file_name):
         fp.write(FILE_HEADER)
 
-    def ON_TEMPLATE_START(self, fp, file_name):
-        func_name = os.path.splitext(os.path.split(file_name)[-1])[0]
+    def ON_TEMPLATE_START(self, fp, func_name):
         self.write(fp, "function %s(d){" % func_name,
                        "    var res = [];",   
                        "    var stack = [d]", INDENT)
@@ -100,7 +98,7 @@ class Backend(BackendBase):
                        "}",)
     
     def ON_TAG_PARTIAL(self, fp, name, level):
-        pass
+        self.write(fp, "res.push.apply(res, %s(stack[stack.length-1]))" % name)
     
     def ON_TAG_VAR_UNESCAPED(self, fp, path, level):
         self.write(fp, "res.push((%s).toString());" % self.get_ctx_value(path))
@@ -109,7 +107,7 @@ class Backend(BackendBase):
         # TODO: actually do the escaping
         self.write(fp, "res.push(html_escape((%s).toString()));" % self.get_ctx_value(path))
     
-    def ON_TEMPLATE_END(self, fp, file_name):
+    def ON_TEMPLATE_END(self, fp, func_name):
         self.write(fp, "return res.join('');", DEDENT, "}");
         pass
     
